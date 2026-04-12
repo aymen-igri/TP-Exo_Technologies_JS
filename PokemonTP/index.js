@@ -1,0 +1,149 @@
+const readline = require('readline');
+
+const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+});
+
+const askQuestion = (query) => new Promise((resolve) => rl.question(query, resolve));
+
+// Helper: Fetch API data
+async function fetchApi(endpoint) {
+    const response = await fetch(`https://pokeapi.co/api/v2/${endpoint}`);
+    if (!response.ok) throw new Error(`Failed to fetch ${endpoint}`);
+    return await response.json();
+}
+
+// robot move: get a random integer between min and max
+function getRandomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+// Fetch a Pokémon and select 5 valid moves (moves that deal damage/have power)
+async function getPokemonData(query) {
+    try {
+        const pokemon = await fetchApi(`pokemon/${query.toString().toLowerCase()}`);
+        console.log(`Loading moves for ${pokemon.name.toUpperCase()}...`);
+        
+        let validMoves = [];
+        // Shuffle the moves to get a random assortment
+        const shuffledMoves = pokemon.moves.sort(() => 0.5 - Math.random());
+
+        for (const moveSlot of shuffledMoves) {
+            if (validMoves.length >= 5) break;
+            
+            const moveData = await fetchApi(`move/${moveSlot.move.name}`);
+            // Only select moves that have power (damaging moves)
+            if (moveData.power !== null) {
+                validMoves.push({
+                    name: moveData.name,
+                    power: moveData.power,
+                    accuracy: moveData.accuracy || 100, // Some moves have null accuracy (always hit)
+                    pp: moveData.pp
+                });
+            }
+        }
+        
+        return {
+            name: pokemon.name.toUpperCase(),
+            hp: 300,
+            moves: validMoves
+        };
+    } catch (e) {
+        console.log("Could not find that Pokémon. Please check the name and try again.");
+        return null;
+    }
+}
+
+async function startGame() {
+    console.log("=== WELCOME TO THE TERMINAL POKEMON BATTLE ===\n");
+    
+    // 1. Player chooses Pokemon
+    let playerPokemon = null;
+    while (!playerPokemon) {
+        const answer = await askQuestion("Enter the name or ID of your Pokémon: ");
+        playerPokemon = await getPokemonData(answer);
+    }
+    
+    // 2. Bot chooses random Pokemon (Generation 1: 1-151)
+    console.log("\nOpponent is choosing a Pokémon...");
+    let botPokemon = null;
+    while (!botPokemon) {
+        botPokemon = await getPokemonData(getRandomInt(1, 151));
+    }
+
+    console.log(`\nBATTLE START: ${playerPokemon.name} VS ${botPokemon.name}!\n`);
+
+    // 3. Game Loop
+    while (playerPokemon.hp > 0 && botPokemon.hp > 0) {
+        console.log(`\n================================`);
+        console.log(`[ HP ] You: ${playerPokemon.hp}/300 | Bot: ${botPokemon.hp}/300`);
+        console.log(`================================`);
+        
+        console.log("\nChoose your move:");
+        playerPokemon.moves.forEach((move, index) => {
+            console.log(`${index + 1}. ${move.name.toUpperCase()} (Power: ${move.power}, ACC: ${move.accuracy}, PP: ${move.pp})`);
+        });
+
+        // Player input validation
+        let moveIndex = -1;
+        while (moveIndex < 0 || moveIndex >= playerPokemon.moves.length) {
+            const input = await askQuestion(`Select a move (1-${playerPokemon.moves.length}): `);
+            moveIndex = parseInt(input) - 1;
+        }
+
+        const playerMove = playerPokemon.moves[moveIndex];
+        
+        // Bot selects random move
+        const botMove = botPokemon.moves[getRandomInt(0, botPokemon.moves.length - 1)];
+
+        console.log(`\n> You chose ${playerMove.name.toUpperCase()}!`);
+        console.log(`> Bot chose ${botMove.name.toUpperCase()}!\n`);
+
+        // Execute attacks (Simultaneous Turn)
+        
+        // --- PLAYER ATTACK ---
+        // If move's pp is lower than enemy's chosen move pp, attack fails
+        if (playerMove.pp < botMove.pp) {
+            console.log(`Your move has less PP (${playerMove.pp} vs ${botMove.pp}). Your attack was cancelled!`);
+        } else {
+            // Accuracy check
+            const hitChance = getRandomInt(1, 100);
+            if (hitChance <= playerMove.accuracy) {
+                botPokemon.hp -= playerMove.power;
+                console.log(`-> Your ${playerMove.name.toUpperCase()} hit the enemy for ${playerMove.power} damage!`);
+            } else {
+                console.log(`-> Your ${playerMove.name.toUpperCase()} missed!`);
+            }
+        }
+
+        // --- BOT ATTACK ---
+        // If move's pp is lower than enemy's chosen move pp, attack fails
+        if (botMove.pp < playerMove.pp) {
+            console.log(`Bot's move has less PP (${botMove.pp} vs ${playerMove.pp}). Bot's attack was cancelled!`);
+        } else {
+            // Accuracy check
+            const hitChance = getRandomInt(1, 100);
+            if (hitChance <= botMove.accuracy) {
+                playerPokemon.hp -= botMove.power;
+                console.log(`-> Bot's ${botMove.name.toUpperCase()} hit you for ${botMove.power} damage!`);
+            } else {
+                console.log(`-> Bot's ${botMove.name.toUpperCase()} missed!`);
+            }
+        }
+    }
+
+    // 4. Declare Winner
+    console.log(`\n============= GAME OVER =============`);
+    if (playerPokemon.hp <= 0 && botPokemon.hp <= 0) {
+        console.log("It's a draw!");
+    } else if (playerPokemon.hp <= 0) {
+        console.log("You lost! The bot wins this battle.");
+    } else {
+        console.log("Congratulations! You defeated the bot!");
+    }
+
+    rl.close();
+}
+
+startGame();
