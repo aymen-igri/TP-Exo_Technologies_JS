@@ -1,5 +1,5 @@
 {
-  "name": "pokemontp",
+  "name": "pokemontp2",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -8,7 +8,14 @@
     "start": "node index.js"
   },
   "keywords": [],
+  "bin": {
+    "pokigame2": "./index.js"
+  },
   "author": "",
   "license": "ISC",
-  "type": "commonjs"
+  "type": "module",
+  "dependencies": {
+    "inquire": "^0.4.8",
+    "inquirer": "^13.4.1"
+  }
 }

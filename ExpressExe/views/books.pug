@@ -1,0 +1,18 @@
+doctype html
+html.bg-black
+  head
+    link(rel="stylesheet", href="/output.css")
+
+  body
+    div.flex.flex-row.items-center.justify-between.p-4.bg-purple-800
+      h1.text-2xl.font-bold.text-white Books Page
+      form(action="/api/logout", method="POST")
+        button.bg-purple-500.text-white.px-4.py-2.rounded(type="submit") Logout
+
+    div.container
+      ul.mt-4.flex.flex-col.items-center.justify-center
+        each book in books
+          div.bg-purple-700.border-2.border-purple-300.p-2.w-full.mb-3.rounded-md
+            h2.text-xl.font-bold.text-white #{book.title}
+            p.text-gray-600.text-white by #{book.authors.join(", ")}
+            p.text-sm.text-white #{book.pageCount} pages

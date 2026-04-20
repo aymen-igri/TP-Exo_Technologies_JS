@@ -1,0 +1,25 @@
+doctype html
+html.bg-black
+  head
+    link(rel="stylesheet", href="/output.css")
+
+  body.flex.flex-col.items-center.justify-center.mt-60
+    form(action="/api/register", method="POST").bg-purple-900.border-2.border-purple-300.rounded-lg.p-3.flex.flex-col.items-center.justity-center
+        h1.text-3xl.text-white.font-bold Register
+        div.flex.flex-col.mt-2
+            label(for="fullname").text-white.bald-md Full Name
+            input(type="text", placeholder="John Doe", name="fullname", required).bg-gray-300.border-2.border-purple-300.rounded-md.w-md
+        div.flex.flex-col.mt-2
+            label(for="email").text-white.bald-md Email
+            input(type="email", placeholder="xyz@domain.com", name="email", required).bg-gray-300.border-2.border-purple-300.rounded-md.w-md
+        div.flex.flex-col.mt-2
+            label(for="username").text-white.bald-md Username
+            input(type="username", placeholder="xyz@domain.com", name="username", required).bg-gray-300.border-2.border-purple-300.rounded-md.w-md
+        div.flex.flex-col.mt-2
+            label(for="password").text-white.bald-md Password
+            input(type="password", placeholder="••••••••", name="password", required).bg-gray-300.border-2.border-purple-300.rounded-md.w-md
+        div.flex.flex-col.mt-2
+            label(for="confirmPassword").text-white.bald-md Confirm Password
+            input(type="password", placeholder="••••••••", name="confirmPassword", required).bg-gray-300.border-2.border-purple-300.rounded-md.w-md
+        button(type="submit").bg-purple-500.text-white.px-4.py-2.rounded.mb-2.mt-2 Register
+        a(href="/login").text-white I already have an account.
