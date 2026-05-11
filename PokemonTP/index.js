@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import inquirer from 'inquirer';
+import { select } from '@inquirer/prompts';
 
 async function fetchApi(endpoint) {
     const response = await fetch(`https://pokeapi.co/api/v2/${endpoint}`);
@@ -32,7 +33,7 @@ async function getPokemonData(query) {
                 validMoves.push({
                     name: moveData.name,
                     power: moveData.power,
-                    accuracy: moveData.accuracy || 100, // Some moves have null accuracy (always hit)
+                    accuracy: moveData.accuracy || 100,
                     pp: moveData.pp
                 });
             }
@@ -49,8 +50,25 @@ async function getPokemonData(query) {
     }
 }
 
+const pokemonLogo = `                                  ,'\\                                              \\:.             .:/
+    _.----.        ____         ,'  _\\   ___    ___     ____                    \\\\\\\`\\\` ._________.''/
+_,-'       \`.     |    |  /\`.   \\,-'    |   \\  /   |   |    \\  |\`.                   \\             /
+\\      __    \\    '-.  | /   \`.  ___    |    \\/    |   '-.   \\ |  |          .--.--, / .':.   .':. \\
+ \\.    \\ \\   |  __  |  |/    ,','_  \`.  |          | __  |    \\|  |         /__:  /  | '::' . '::' |
+   \\    \\/   /,' _\`.|      ,' / / / /   |          ,' _\`.|     |  |            / /   |\\\`.  ._.   .'|
+    \\     ,-'/  /   \\    ,'   | \\/ / ,\`.|         /  /   \\  |     |           / /    |.'         '.|
+     \\    \\ |   \\_/  |   \`-.  \\    \`'  /|  |    ||   \\_/  | |\\    |          /___-_-,|.\\\\\\\\   /  /.|
+      \\    \\ \\      /       \`-.\`.___,-' |  |\\  /| \\      /  | |   |               // |''\\\\.;  ;,/ '|
+       \\    \\ \`.__,'|  |\`-._    \`|      |__| \\/ |  \`.__,'|  | |   |              \\\`==|:=         =:|
+        \\_.-'       |__|    \`-._ |              '-.|     '-.| |   |                  \`.          .'
+                                \`'                            '-._|                   :-._____.-:
+                                                                                      \\\`''       \\\`''
+`;
+
 async function startGame() {
+    console.log(pokemonLogo);
     console.log("=== WELCOME TO THE TERMINAL POKEMON BATTLE ===\n");
+    
 
     //chooses Pokemon
     let playerPokemon = null;
@@ -77,22 +95,18 @@ async function startGame() {
 
     // start game untill sombody lose
     while (playerPokemon.hp > 0 && botPokemon.hp > 0) {
+        // Generate choices dynamically for the selection list:
         const moveChoices = playerPokemon.moves.map(move => {
             return {
-                name: `${move.name.toUpperCase()} (Power: ${move.power}, ACC: ${move.accuracy}, PP: ${move.pp})`,
-                value: move // This is the actual data you get back!
+                name: `${move.name.toUpperCase()} (Power: ${move.power}, ACC: ${move.accuracy}, PP: ${move.pp})`, // What shows up in the terminal
+                value: move      // What gets returned when the user hits Enter
             };
         });
 
-        const answer = await inquirer.prompt([
-            {
-                type: 'list',
-                name: 'selectedMove',
-                message: 'Choose your move:',
-                choices: moveChoices
-            }
-        ]);
-        const playerMove = answer.selectedMove;
+        const playerMove = await select({
+            message: 'Choose your move:',
+            choices: moveChoices
+        });
 
         // Bot selects random move
         const botMove = botPokemon.moves[getRandomInt(0, botPokemon.moves.length - 1)];
