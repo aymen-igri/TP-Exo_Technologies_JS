@@ -2,17 +2,17 @@ import { IBook } from "../interfaces/book";
 import { Format } from "../enums/format";
 import { Status } from "../enums/status";
 
-export class Book implements IBook{
-  private id: string;
-  private title: string;
-  private author: string;
-  private price: number;
-  private pageCountReaded: number;
-  private pageCount: number;
-  private format: Format;
-  private status: Status;
-  private suggestedBy: string;
-  private finished: boolean;
+export class Book implements IBook {
+  id: string;
+  title: string;
+  author: string;
+  price: number;
+  pageCountReaded: number;
+  pageCount: number;
+  format: Format;
+  status: Status;
+  suggestedBy: string;
+  finished: boolean;
 
   constructor(
     id: string,
@@ -85,20 +85,20 @@ export class Book implements IBook{
 
   async deleteBook(): Promise<void> {
     try {
-      const response = await fetch('http://localhost:5000/api/books/delete', {
-        method: 'DELETE',
+      const response = await fetch("http://localhost:5000/api/books/delete", {
+        method: "DELETE",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ id: this.id }),
       });
       if (!response.ok) {
-        throw new Error('Failed to delete book');
+        throw new Error("Failed to delete book");
       }
     } catch (error) {
-      console.error('Error deleting book:', error);
+      console.error("Error deleting book:", error);
       throw error;
     }
   }
-
 }
+
