@@ -1,0 +1,11 @@
+<div>
+  <h2>Books</h2>
+  @for (book of Books; track book.id) {
+    @if (book.publishedDate > 2020) {
+      <h2>{{ book.title }}</h2>
+      <h6>id: {{book.id}}</h6>
+      <h6>author: {{book.author}}</h6>
+      <p>published Date: {{ book.publishedDate }}</p>
+    }
+  }
+</div>
